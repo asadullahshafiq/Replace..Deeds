@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#0d1117">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Replace Deeds">
+<meta name="mobile-web-app-capable" content="yes">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.svg">
+<title>Replace Deeds</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;600&family=Orbitron:wght@700&display=swap" rel="stylesheet">
+<style>
+/* ===== CSS VARIABLES & THEMES ===== */
+:root {
+  --bg: #0d1117;
+  --bg2: #161b22;
+  --bg3: #21262d;
+  --accent: #00d4b4;
+  --accent2: #00a896;
+  --text: #e6edf3;
+  --text2: #8b949e;
+  --border: rgba(255,255,255,0.08);
+  --danger: #f85149;
+  --warn: #d29922;
+  --success: #3fb950;
+  --card-shadow: 0 4px 24px rgba(0,0,0,0.4);
+  --radius: 16px;
+  --radius-sm: 10px;
+  --font-head: 'Playfair Display', serif;
+  --font-body: 'DM Sans', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+}
+
+[data-theme="ocean"] {
+  --bg: #0a1628;
+  --bg2: #0d1f3c;
+  --bg3: #122447;
+  --accent: #38bdf8;
+  --accent2: #0ea5e9;
+  --border: rgba(56,189,248,0.1);
+}
+
+[data-theme="forest"] {
+  --bg: #0a1a0a;
+  --bg2: #0f2311;
+  --bg3: #162e19;
+  --accent: #4ade80;
+  --accent2: #22c55e;
+  --border: rgba(74,222,128,0.1);
+}
+
+[data-theme="sunset"] {
+  --bg: #1a0a0a;
+  --bg2: #2a1010;
+  --bg3: #3a1515;
+  --accent: #fb923c;
+  --accent2: #f97316;
+  --border: rgba(251,146,60,0.1);
+}
+
+/* ===== RESET ===== */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: var(--font-body);
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  transition: background 0.4s, color 0.4s;
+}
+
+/* ===== SPLASH ===== */
+.splash {
+  position: fixed; inset: 0;
+  background: var(--bg);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 9999;
+  transition: opacity 0.8s, transform 0.8s;
+}
+.splash.fade-out { opacity: 0; transform: scale(1.1); pointer-events: none; }
+.splash-logo { text-align: center; animation: splashIn 0.8s cubic-bezier(.34,1.56,.64,1); }
+@keyframes splashIn {
+  from { opacity: 0; transform: scale(0.5) translateY(40px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+.logo-ring { width: 120px; height: 120px; margin: 0 auto 24px; filter: drop-shadow(0 0 30px rgba(0,212,180,0.5)); animation: logoSpin 3s ease infinite; }
+@keyframes logoSpin { 0%,100%{filter:drop-shadow(0 0 20px rgba(0,212,180,0.4));} 50%{filter:drop-shadow(0 0 50px rgba(0,212,180,0.8));} }
+.logo-svg { width: 100%; height: 100%; }
+.logo-check { stroke-dasharray: 60; stroke-dashoffset: 60; animation: checkDraw 0.6s 0.4s ease forwards; }
+@keyframes checkDraw { to { stroke-dashoffset: 0; } }
+.splash-title { font-family: var(--font-head); font-size: 2.2rem; font-weight: 900; background: linear-gradient(135deg, var(--accent), #fff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin-bottom: 8px; }
+.splash-sub { color: var(--text2); font-size: 0.9rem; letter-spacing: 2px; text-transform: uppercase; }
+
+/* ===== SCREEN / HIDDEN ===== */
+.screen { min-height: 100vh; }
+.hidden { display: none !important; }
+
+/* ===== ONBOARDING (simplified but kept) ===== */
+.onboard-container { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px; }
+.onboard-step { display: none; text-align: center; max-width: 400px; width: 100%; }
+.onboard-step.active { display: block; animation: fadeUp 0.5s ease; }
+@keyframes fadeUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+.onboard-icon { font-size: 4rem; margin-bottom: 16px; }
+.onboard-step h2 { font-family: var(--font-head); font-size: 1.8rem; margin-bottom: 12px; }
+.onboard-step p { color: var(--text2); margin-bottom: 24px; line-height: 1.6; }
+.field-group { margin-bottom: 16px; text-align: left; }
+.field-group label { display: block; font-size: 0.8rem; color: var(--text2); margin-bottom: 6px; text-transform: uppercase; }
+input, select { width: 100%; padding: 12px 16px; background: var(--bg3); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text); font-family: var(--font-body); font-size: 0.95rem; outline: none; transition: border-color 0.2s; }
+input:focus, select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(0,212,180,0.1); }
+.commit-options { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-bottom: 24px; }
+.commit-btn { padding: 10px 20px; border-radius: 100px; background: var(--bg3); border: 1px solid var(--border); color: var(--text2); cursor: pointer; transition: all 0.2s; }
+.commit-btn:hover, .commit-btn.active { background: var(--accent); color: #000; border-color: var(--accent); transform: scale(1.05); }
+.btn-primary { width: 100%; padding: 14px; background: linear-gradient(135deg, var(--accent), var(--accent2)); color: #000; font-weight: 700; border: none; border-radius: var(--radius-sm); cursor: pointer; transition: all 0.2s; }
+.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,212,180,0.3); }
+.btn-secondary { padding: 10px 20px; background: transparent; border: 1px solid var(--accent); color: var(--accent); border-radius: var(--radius-sm); cursor: pointer; transition: all 0.2s; }
+.btn-secondary:hover { background: rgba(0,212,180,0.1); }
+.btn-danger { padding: 10px 20px; background: transparent; border: 1px solid var(--danger); color: var(--danger); border-radius: var(--radius-sm); cursor: pointer; }
+.btn-danger:hover { background: rgba(248,81,73,0.1); }
+
+/* ===== TOPBAR & BOTTOM NAV ===== */
+.topbar { position: sticky; top: 0; z-index: 100; display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; background: var(--bg); border-bottom: 1px solid var(--border); backdrop-filter: blur(20px); }
+.streak-badge { display: flex; align-items: center; gap: 4px; background: var(--bg3); padding: 6px 12px; border-radius: 100px; cursor: pointer; border: 1px solid var(--border); }
+.streak-badge:hover { border-color: var(--accent); }
+.streak-fire { font-size: 1.2rem; }
+.streak-num { font-family: var(--font-mono); font-weight: 600; color: var(--accent); }
+.avatar-btn { width: 34px; height: 34px; background: linear-gradient(135deg, var(--accent), var(--accent2)); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; color: #000; cursor: pointer; margin-left: 8px; }
+.water-badge { display: flex; align-items: center; gap: 4px; background: var(--bg3); padding: 6px 10px; border-radius: 100px; font-size: 0.85rem; color: var(--accent); font-family: var(--font-mono); border: 1px solid var(--border); cursor: pointer; }
+
+.motivation-banner { background: linear-gradient(90deg, rgba(0,212,180,0.1), rgba(0,168,150,0.05)); border-bottom: 1px solid rgba(0,212,180,0.15); padding: 8px 16px; text-align: center; font-size: 0.82rem; color: var(--accent); font-style: italic; }
+.main-content { padding: 0 0 80px; min-height: calc(100vh - 120px); }
+.tab-panel { display: none; padding: 16px; }
+.tab-panel.active { display: block; animation: fadeUp 0.3s ease; }
+
+/* Cards & Habits (simplified) */
+.section-card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 16px; overflow: hidden; }
+.section-header { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; cursor: pointer; }
+.section-name { font-family: var(--font-head); font-size: 1.1rem; font-weight: 700; }
+.habits-list { padding: 0 16px 16px; }
+.habit-row { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--border); }
+.habit-check { width: 28px; height: 28px; border: 2px solid var(--border); border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; background: transparent; }
+.habit-check.done { background: var(--accent); border-color: var(--accent); color: #000; transform: scale(1.1); }
+.add-habit-btn { display: flex; align-items: center; gap: 8px; padding: 10px 0; background: none; border: none; color: var(--text2); cursor: pointer; width: 100%; }
+.fab-add { position: fixed; bottom: 90px; right: 20px; width: 56px; height: 56px; background: linear-gradient(135deg, var(--accent), var(--accent2)); color: #000; font-size: 1.8rem; border: none; border-radius: 50%; cursor: pointer; box-shadow: 0 4px 20px rgba(0,212,180,0.4); display: flex; align-items: center; justify-content: center; z-index: 50; }
+.bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; display: flex; background: var(--bg2); border-top: 1px solid var(--border); z-index: 100; }
+.nav-btn { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 10px 0; background: none; border: none; cursor: pointer; color: var(--text2); transition: all 0.2s; }
+.nav-btn.active { color: var(--accent); }
+.nav-icon { font-size: 1.3rem; }
+.nav-label { font-size: 0.65rem; margin-top: 2px; }
+
+/* Tools Panel specific */
+.tools-grid { display: grid; grid-template-columns: 1fr; gap: 20px; margin-top: 10px; }
+.tool-card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; transition: all 0.2s; }
+.tool-header { padding: 14px 16px; background: var(--bg3); font-family: var(--font-head); font-size: 1.2rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 8px; }
+.tool-body { padding: 16px; }
+.calc-display { background: var(--bg); padding: 15px; border-radius: var(--radius-sm); font-family: var(--font-mono); font-size: 1.6rem; text-align: right; margin-bottom: 12px; overflow-x: auto; }
+.calc-buttons { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.calc-btn { background: var(--bg3); border: none; padding: 12px; border-radius: 8px; color: var(--text); font-size: 1.1rem; cursor: pointer; transition: 0.1s; font-family: var(--font-mono); }
+.calc-btn.accent { background: var(--accent); color: #000; }
+.calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; text-align: center; margin-top: 10px; }
+.calendar-day { padding: 8px 0; background: var(--bg3); border-radius: 8px; font-size: 0.8rem; }
+.calendar-header { font-weight: bold; color: var(--accent); }
+.game-container { background: #000; border-radius: var(--radius-sm); overflow: hidden; position: relative; min-height: 300px; }
+canvas.game-canvas { width: 100%; height: auto; display: block; background: #000; touch-action: none; }
+
+/* Modal etc */
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(10px); z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 20px; }
+.modal { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; width: 100%; max-width: 420px; }
+.hidden { display: none; }
+@media (min-width: 600px) { .main-content { max-width: 600px; margin: 0 auto; } .bottom-nav { max-width: 600px; left: 50%; transform: translateX(-50%); } .fab-add { right: calc(50% - 300px + 20px); } }
+</style>
+</head>
+<body>
+
+<div id="splash" class="splash">
+  <div class="splash-logo"><div class="logo-ring"><svg viewBox="0 0 100 100" class="logo-svg"><circle cx="50" cy="50" r="40" fill="none" stroke="rgba(0,212,180,0.3)" stroke-width="3"/><path d="M50 15 A35 35 0 1 1 15 50" fill="none" stroke="#00d4b4" stroke-width="3" stroke-linecap="round"/><polygon points="48,8 56,18 40,18" fill="#00d4b4"/><polyline points="30,52 44,66 72,38" fill="none" stroke="#00d4b4" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" class="logo-check"/></svg></div><h1 class="splash-title">Replace Deeds</h1><p class="splash-sub">Build. Sustain. Transform.</p></div>
+</div>
+
+<!-- ONBOARDING (quick minimal) -->
+<div id="onboarding" class="screen hidden">
+  <div class="onboard-container"><div class="onboard-step active" data-step="0"><div class="onboard-icon">🌱</div><h2>Welcome to Replace Deeds</h2><p>Track habits, grow tree, use tools.</p><button class="btn-primary" onclick="nextOnboard()">Let's Begin</button></div>
+  <div class="onboard-step" data-step="1"><div class="onboard-icon">👤</div><h2>Create Profile</h2><div class="field-group"><label>Name *</label><input type="text" id="pName"></div><div class="field-group"><label>Username *</label><input type="text" id="pUsername"></div><div class="field-group"><label>PIN (4 digits) *</label><input type="password" id="pPin" maxlength="4"></div><button class="btn-primary" onclick="saveProfile()">Create</button></div>
+  <div class="onboard-step" data-step="2"><div class="onboard-icon">🎯</div><h2>Commitment</h2><div class="commit-options"><button class="commit-btn" data-days="7">7 Days</button><button class="commit-btn" data-days="30">30 Days</button><button class="commit-btn" data-days="100">100 Days</button></div><button class="btn-primary" onclick="finishOnboard()" id="commitNext" disabled>Start Journey</button></div></div>
+</div>
+
+<!-- MAIN APP -->
+<div id="app" class="screen hidden">
+  <header class="topbar"><div class="topbar-left"><div class="streak-badge" onclick="showStreakInfo()"><span class="streak-fire">🔥</span><span class="streak-num" id="streakNum">0</span></div></div><div class="topbar-center"><svg viewBox="0 0 40 40" width="28" height="28" style="cursor:pointer" onclick="showTab('result')"><circle cx="20" cy="20" r="16" fill="none" stroke="rgba(0,212,180,0.4)" stroke-width="2"/><path d="M20 6 A14 14 0 1 1 6 20" fill="none" stroke="#00d4b4" stroke-width="2" stroke-linecap="round"/><polygon points="19,2 23,8 15,8" fill="#00d4b4"/><polyline points="12,21 17,27 29,15" fill="none" stroke="#00d4b4" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="topbar-right"><div class="water-badge" onclick="showTab('result')"><span>💧</span><span id="totalWater">0</span></div><div class="avatar-btn" onclick="showTab('settings')"><span id="avatarInitial">U</span></div></div></header>
+  <div class="motivation-banner"><span id="motivText">Every great journey begins with a single step 🌟</span></div>
+  <main class="main-content">
+    <div class="tab-panel active" id="tab-habits"><div class="sections-container" id="sectionsContainer"></div><button class="fab-add" onclick="showAddSection()">+</button></div>
+    <div class="tab-panel" id="tab-tasks"><div><h2>Tasks</h2><button class="btn-secondary" style="margin-bottom:10px" onclick="showAddTask()">+ Add Task</button></div><div class="tasks-list" id="tasksList"></div></div>
+    <div class="tab-panel" id="tab-analytics"><h2>Analytics</h2><div id="analyticsSimple">Streak and progress shown on topbar</div></div>
+    <div class="tab-panel" id="tab-result"><h2>Your Tree</h2><canvas id="treeCanvas" width="280" height="280" style="width:100%;max-width:280px;margin:0 auto;display:block;background:var(--bg2);border-radius:16px"></canvas><div id="treeStageLabel">🌱 Seed</div><div id="grassGrid" style="margin-top:12px"></div></div>
+    <div class="tab-panel" id="tab-settings"><div class="settings-container"><h2>Settings</h2><div class="settings-section"><h3>Profile</h3><div id="profileCard"></div></div><div class="settings-section"><h3>Theme</h3><div class="theme-options"><button class="theme-btn" data-theme="dark" onclick="setTheme('dark')">Dark</button><button class="theme-btn" data-theme="ocean" onclick="setTheme('ocean')">Ocean</button></div></div><div class="settings-section"><button class="btn-danger" onclick="confirmReset()">Reset App</button></div></div></div>
+    
+    <!-- NEW TOOLS TAB -->
+    <div class="tab-panel" id="tab-tools">
+      <div class="tools-grid">
+        <!-- Scientific Calculator -->
+        <div class="tool-card"><div class="tool-header"><span>🧮</span> Scientific Calculator</div><div class="tool-body"><div class="calc-display" id="calcDisplay">0</div><div class="calc-buttons" id="calcButtons"></div></div></div>
+        <!-- Calendar -->
+        <div class="tool-card"><div class="tool-header"><span>📅</span> Calendar</div><div class="tool-body"><div style="display:flex;justify-content:space-between;margin-bottom:12px"><button class="btn-secondary" id="prevMonthBtn">◀</button><span id="monthYearLabel"></span><button class="btn-secondary" id="nextMonthBtn">▶</button></div><div id="calendarGrid" class="calendar-grid"></div></div></div>
+        <!-- Witty Star Game -->
+        <div class="tool-card"><div class="tool-header"><span>⭐</span> Witty Star</div><div class="tool-body"><div class="game-container"><canvas id="gameCanvas" class="game-canvas" width="400" height="400" style="width:100%;height:auto;background:#000"></canvas></div><div style="display:flex;gap:8px;margin-top:8px"><button class="btn-secondary" id="startGameBtn">🎮 Start Game</button><span id="gameScoreSpan" style="color:var(--accent);font-family:monospace">Stars: 0</span></div></div></div>
+      </div>
+    </div>
+  </main>
+  <nav class="bottom-nav">
+    <button class="nav-btn active" onclick="showTab('habits')" data-tab="habits"><span class="nav-icon">🏠</span><span class="nav-label">Habits</span></button>
+    <button class="nav-btn" onclick="showTab('tasks')" data-tab="tasks"><span class="nav-icon">✅</span><span class="nav-label">Tasks</span></button>
+    <button class="nav-btn" onclick="showTab('result')" data-tab="result"><span class="nav-icon">🌳</span><span class="nav-label">Result</span></button>
+    <button class="nav-btn" onclick="showTab('tools')" data-tab="tools"><span class="nav-icon">🛠️</span><span class="nav-label">Tools</span></button>
+    <button class="nav-btn" onclick="showTab('settings')" data-tab="settings"><span class="nav-icon">⚙️</span><span class="nav-label">Settings</span></button>
+  </nav>
+</div>
+
+<div id="modalOverlay" class="modal-overlay hidden"><div class="modal"><div id="modalContent"></div><button class="btn-secondary" onclick="closeModal()">Close</button></div></div>
+
+<script>
+// ========== SIMPLIFIED STORAGE & DATA ==========
+const store = {
+  get: (k, d=null) => { try { return JSON.parse(localStorage.getItem(k)||'null')??d } catch(e){ return d } },
+  set: (k,v) => localStorage.setItem(k, JSON.stringify(v))
+};
+let currentStreak = 0, totalWater = 0;
+function today() { return new Date().toISOString().split('T')[0]; }
+function genId() { return Date.now()+'-'+Math.random(); }
+
+let sections = store.get('sections', []);
+let habits = store.get('habits', []);
+let completions = store.get('completions', {});
+let tasks = store.get('tasks', []);
+let taskCompletions = store.get('taskCompletions', {});
+let profile = store.get('profile', null);
+let settings = store.get('settings', { onboardDone: false, theme: 'dark' });
+
+function saveAll() { store.set('sections', sections); store.set('habits', habits); store.set('completions', completions); store.set('tasks', tasks); store.set('taskCompletions', taskCompletions); store.set('profile', profile); store.set('settings', settings); }
+function updateStreakAndWater() { 
+  let todayComp = completions[today()]||{};
+  let doneCount = habits.filter(h=>todayComp[h.id]).length;
+  currentStreak = doneCount===habits.length && habits.length>0 ? (store.get('streak',0)+1) : (doneCount===0?0:store.get('streak',0));
+  if(doneCount===habits.length && habits.length>0) store.set('streak',currentStreak);
+  else if(doneCount===0 && habits.length>0) store.set('streak',0);
+  else if(habits.length===0) store.set('streak',0);
+  totalWater = store.get('totalWater',0);
+  document.getElementById('streakNum').innerText = currentStreak;
+  document.getElementById('totalWater').innerText = totalWater;
+}
+function addWater(amt) { totalWater += amt; store.set('totalWater', totalWater); updateStreakAndWater(); renderTree(); }
+
+function renderSections() {
+  let container = document.getElementById('sectionsContainer');
+  if(!container) return;
+  let todayComp = completions[today()]||{};
+  container.innerHTML = sections.map(sec => `<div class="section-card"><div class="section-header"><div class="section-name">${sec.emoji||'📌'} ${sec.name}</div><div>${habits.filter(h=>h.sectionId===sec.id).filter(h=>todayComp[h.id]).length}/${habits.filter(h=>h.sectionId===sec.id).length}</div></div><div class="habits-list">${habits.filter(h=>h.sectionId===sec.id).map(h=>`<div class="habit-row"><div class="habit-check ${todayComp[h.id]?'done':''}" onclick="toggleHabit('${h.id}')">${todayComp[h.id]?'✓':''}</div><div class="habit-name">${h.name}</div><button class="habit-del-btn" onclick="deleteHabit('${h.id}')">✕</button></div>`).join('')}<button class="add-habit-btn" onclick="showAddHabit('${sec.id}')">+ Add Habit</button></div></div>`).join('');
+  updateStreakAndWater();
+}
+function toggleHabit(id) {
+  let day = today();
+  if(!completions[day]) completions[day]={};
+  let was = completions[day][id];
+  completions[day][id] = !was;
+  if(!was) addWater(1);
+  saveAll(); renderSections(); renderTasks();
+}
+function showAddSection() { let name=prompt("Section name:"); if(name) sections.push({id:genId(), name, emoji:'📌'}); saveAll(); renderSections(); }
+function showAddHabit(sid) { let name=prompt("Habit name:"); if(name) habits.push({id:genId(), name, sectionId:sid}); saveAll(); renderSections(); }
+function deleteHabit(id) { habits=habits.filter(h=>h.id!==id); saveAll(); renderSections(); }
+function renderTasks() { let listDiv=document.getElementById('tasksList'); if(!listDiv) return; listDiv.innerHTML = tasks.map(t=>`<div class="habit-row"><div class="habit-check ${taskCompletions[t.id]?'done':''}" onclick="toggleTask('${t.id}')">${taskCompletions[t.id]?'✓':''}</div><div>${t.name}</div><button onclick="deleteTask('${t.id}')">✕</button></div>`).join(''); }
+function toggleTask(id) { taskCompletions[id]=!taskCompletions[id]; saveAll(); renderTasks(); }
+function showAddTask() { let name=prompt("Task name:"); if(name) tasks.push({id:genId(), name}); saveAll(); renderTasks(); }
+function deleteTask(id) { tasks=tasks.filter(t=>t.id!==id); delete taskCompletions[id]; saveAll(); renderTasks(); }
+
+function renderTree() { let canvas=document.getElementById('treeCanvas'); if(!canvas) return; let ctx=canvas.getContext('2d'); let w=canvas.width=280, h=canvas.height=280; ctx.fillStyle=settings.theme==='dark'?'#0d1117':'#1a2a1a'; ctx.fillRect(0,0,w,h); ctx.fillStyle='#4ade80'; ctx.font='bold 20px sans-serif'; ctx.fillText(`🌳 ${totalWater}💧`,10,30); ctx.fillStyle='#00d4b4'; ctx.beginPath(); ctx.arc(w/2, h-50, 20+Math.min(totalWater/10,30), 0, Math.PI*2); ctx.fill(); ctx.fillStyle='#8B4513'; ctx.fillRect(w/2-10, h-80, 20, 40); }
+function renderGrass() { let g=document.getElementById('grassGrid'); if(g) g.innerHTML=`🔥 Streak: ${currentStreak} days`; }
+function updateUI() { renderSections(); renderTasks(); renderTree(); renderGrass(); if(profile) document.getElementById('avatarInitial').innerText=profile.name[0]; }
+
+// Tools: Calculator
+function buildCalculator() {
+  const display = document.getElementById('calcDisplay');
+  let expr = '';
+  const btns = ['7','8','9','/','4','5','6','*','1','2','3','-','0','.','=','+','sin','cos','tan','sqrt','^','(',')','C'];
+  const container = document.getElementById('calcButtons');
+  container.innerHTML = btns.map(b => `<button class="calc-btn" data-op="${b}">${b}</button>`).join('');
+  container.querySelectorAll('.calc-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      let op = btn.dataset.op;
+      if(op === 'C') { expr = ''; display.innerText = '0'; }
+      else if(op === '=') {
+        try { let res = eval(expr.replace(/\^/g,'**').replace(/sin/g,'Math.sin').replace(/cos/g,'Math.cos').replace(/tan/g,'Math.tan').replace(/sqrt/g,'Math.sqrt')); display.innerText = res; expr = res.toString(); } catch(e) { display.innerText = 'Error'; expr=''; }
+      } else { expr += op; display.innerText = expr; }
+    });
+  });
+}
+// Calendar
+let currentDate = new Date();
+function renderCalendar() {
+  const year = currentDate.getFullYear(), month = currentDate.getMonth();
+  const firstDay = new Date(year, month, 1).getDay();
+  const daysInMonth = new Date(year, month+1, 0).getDate();
+  let grid = document.getElementById('calendarGrid');
+  if(!grid) return;
+  document.getElementById('monthYearLabel').innerText = `${currentDate.toLocaleString('default', { month: 'long' })} ${year}`;
+  let cells = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map(d => `<div class="calendar-day calendar-header">${d}</div>`).join('');
+  for(let i=0; i<firstDay; i++) cells += `<div class="calendar-day"></div>`;
+  for(let d=1; d<=daysInMonth; d++) { let isToday = (d===new Date().getDate() && year===new Date().getFullYear() && month===new Date().getMonth()); cells += `<div class="calendar-day" style="${isToday?'background:var(--accent);color:#000':''}">${d}</div>`; }
+  grid.innerHTML = cells;
+}
+function prevMonth() { currentDate.setMonth(currentDate.getMonth()-1); renderCalendar(); }
+function nextMonth() { currentDate.setMonth(currentDate.getMonth()+1); renderCalendar(); }
+
+// Witty Star Game Integration
+let gameActive = false, gameScore = 0, gameCtx, gameCanvas, gameReq;
+let playerPos = { x: 200, y: 200 }, starsArr = [], enemiesArr = [], mouseX=200, mouseY=200;
+function initGameCanvas() {
+  gameCanvas = document.getElementById('gameCanvas');
+  if(!gameCanvas) return;
+  gameCanvas.width = gameCanvas.clientWidth; gameCanvas.height = 400;
+  gameCtx = gameCanvas.getContext('2d');
+  const updateMouse = (e) => { const rect=gameCanvas.getBoundingClientRect(); let cx = (e.clientX - rect.left)*(gameCanvas.width/rect.width); let cy = (e.clientY - rect.top)*(gameCanvas.height/rect.height); mouseX=Math.min(Math.max(cx,10),gameCanvas.width-10); mouseY=Math.min(Math.max(cy,10),gameCanvas.height-10); };
+  gameCanvas.addEventListener('mousemove', updateMouse); gameCanvas.addEventListener('touchmove', (e)=>{ e.preventDefault(); if(e.touches[0]) updateMouse(e.touches[0]); }, {passive:false});
+  gameCanvas.addEventListener('touchstart', updateMouse);
+}
+function startGameFn() {
+  gameActive = true; gameScore = 0; starsArr = []; enemiesArr = [];
+  for(let i=0;i<5;i++) starsArr.push({x:Math.random()*gameCanvas.width, y:Math.random()*gameCanvas.height});
+  playerPos = { x: gameCanvas.width/2, y: gameCanvas.height/2 };
+  document.getElementById('gameScoreSpan').innerText = `Stars: 0`;
+  function gameLoop() {
+    if(!gameActive) return;
+    if(!gameCtx) return;
+    gameCtx.fillStyle = '#000'; gameCtx.fillRect(0,0,gameCanvas.width,gameCanvas.height);
+    playerPos.x += (mouseX - playerPos.x)*0.12; playerPos.y += (mouseY - playerPos.y)*0.12;
+    gameCtx.beginPath(); gameCtx.arc(playerPos.x, playerPos.y, 10, 0, Math.PI*2); gameCtx.fillStyle = '#00f2ff'; gameCtx.fill();
+    starsArr.forEach((s, idx) => { gameCtx.beginPath(); gameCtx.arc(s.x, s.y, 6, 0, Math.PI*2); gameCtx.fillStyle = '#ffe0b0'; gameCtx.fill(); if(Math.hypot(playerPos.x-s.x, playerPos.y-s.y) < 15) { gameScore++; document.getElementById('gameScoreSpan').innerText = `Stars: ${gameScore}`; starsArr[idx] = {x:Math.random()*gameCanvas.width, y:Math.random()*gameCanvas.height}; } });
+    if(Math.random()<0.02) enemiesArr.push({x:Math.random()<0.5?-20:gameCanvas.width+20, y:Math.random()*gameCanvas.height, angle:Math.atan2(playerPos.y - (Math.random()*gameCanvas.height), playerPos.x - (Math.random()<0.5?-20:gameCanvas.width+20))});
+    for(let i=enemiesArr.length-1;i>=0;i--) { let e=enemiesArr[i]; e.x += Math.cos(e.angle)*3; e.y += Math.sin(e.angle)*3; gameCtx.beginPath(); gameCtx.arc(e.x, e.y, 10, 0, Math.PI*2); gameCtx.fillStyle = '#ff3333'; gameCtx.fill(); if(Math.hypot(playerPos.x-e.x, playerPos.y-e.y)<18) { gameActive=false; alert(`Game Over! Score: ${gameScore}`); return; } if(e.x<-100||e.x>gameCanvas.width+100) enemiesArr.splice(i,1); }
+    gameReq = requestAnimationFrame(gameLoop);
+  }
+  if(gameReq) cancelAnimationFrame(gameReq);
+  gameLoop();
+}
+// Theme, onboarding, etc
+function setTheme(th) { settings.theme=th; document.documentElement.dataset.theme=th; saveAll(); }
+function showTab(tab) { document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active')); document.getElementById(`tab-${tab}`).classList.add('active'); document.querySelectorAll('.nav-btn').forEach(b=>b.classList.toggle('active', b.dataset.tab===tab)); if(tab==='result'){ renderTree(); renderGrass();} if(tab==='tools'){ if(gameCanvas&&!gameActive)initGameCanvas(); renderCalendar(); } }
+function showStreakInfo() { alert(`🔥 Current streak: ${currentStreak} days\n💧 Total Water: ${totalWater}`); }
+function confirmReset() { if(confirm("Delete all data?")) { localStorage.clear(); location.reload(); } }
+let onboardStep=0, selectedCommit=null;
+function nextOnboard() { onboardStep++; document.querySelectorAll('.onboard-step').forEach((el,i)=>el.classList.toggle('active', i===onboardStep)); }
+function saveProfile() { let name=document.getElementById('pName').value, uname=document.getElementById('pUsername').value, pin=document.getElementById('pPin').value; if(name&&uname&&pin.length===4){ profile={name,username:uname,pin}; store.set('profile',profile); nextOnboard(); } else alert("Fill all"); }
+function finishOnboard() { if(selectedCommit){ settings.onboardDone=true; settings.commitment=selectedCommit; saveAll(); document.getElementById('onboarding').classList.add('hidden'); document.getElementById('app').classList.remove('hidden'); updateUI(); } }
+document.querySelectorAll('.commit-btn').forEach(btn=>{ btn.addEventListener('click',function(){ document.querySelectorAll('.commit-btn').forEach(b=>b.classList.remove('active')); this.classList.add('active'); selectedCommit=parseInt(this.dataset.days); document.getElementById('commitNext').disabled=false; }); });
+window.addEventListener('load',()=>{
+  if(settings.onboardDone){ document.getElementById('splash').style.display='none'; document.getElementById('onboarding').classList.add('hidden'); document.getElementById('app').classList.remove('hidden'); updateUI(); buildCalculator(); initGameCanvas(); renderCalendar(); document.getElementById('prevMonthBtn')?.addEventListener('click',prevMonth); document.getElementById('nextMonthBtn')?.addEventListener('click',nextMonth); document.getElementById('startGameBtn')?.addEventListener('click',()=>startGameFn()); }
+  else { setTimeout(()=>{ document.getElementById('splash').classList.add('fade-out'); setTimeout(()=>{ document.getElementById('splash').style.display='none'; document.getElementById('onboarding').classList.remove('hidden'); },800); },1500); }
+  setTheme(settings.theme||'dark');
+  window.closeModal=()=>document.getElementById('modalOverlay').classList.add('hidden');
+});
+</script>
+</body>
+</html>
